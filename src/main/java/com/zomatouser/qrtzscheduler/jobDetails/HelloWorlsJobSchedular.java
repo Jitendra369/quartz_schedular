@@ -2,6 +2,7 @@ package com.zomatouser.qrtzscheduler.jobDetails;
 
 import com.zomatouser.qrtzscheduler.jobs.ColorJob;
 import com.zomatouser.qrtzscheduler.jobs.HelloWorld;
+import com.zomatouser.qrtzscheduler.jobs.SatatefullJOb;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -22,12 +23,31 @@ public class HelloWorlsJobSchedular {
             Scheduler scheduler = stdSchedulerFactory.getScheduler();
 
 //            simpleSchedular(scheduler);
-            schedularWithJobDataMap(scheduler);
+//            schedularWithJobDataMap(scheduler);
+            stateFullJobHandler(scheduler);
 
 
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
+    }
+
+    private void stateFullJobHandler(Scheduler scheduler) throws SchedulerException {
+
+        String MISS_FIRE_JOB_NAME = "StatefulJob";
+        String MISS_FIRE_JOB_GROUP = "group1";
+        String MISS_FIRE_JOB_TRIGGER = "StatefulJob-trigger";
+
+        Date startTime = DateBuilder.nextGivenSecondDate(null, 15);
+        JobDetail missFireJobDetails = JobBuilder.newJob(SatatefullJOb.class).withIdentity(MISS_FIRE_JOB_NAME, MISS_FIRE_JOB_GROUP)
+                .usingJobData(SatatefullJOb.EXECUTION_DELAY, 10000L).build();
+
+        SimpleTrigger simpleTrigger = TriggerBuilder.newTrigger().withIdentity(MISS_FIRE_JOB_TRIGGER, MISS_FIRE_JOB_GROUP).startAt(startTime)
+                .withSchedule(simpleSchedule().withIntervalInSeconds(3).withRepeatCount(5)).build();
+
+        scheduler.scheduleJob(missFireJobDetails, simpleTrigger);
+        log.info("sta");
+        scheduler.start();
     }
 
     private void schedularWithJobDataMap(Scheduler scheduler) throws SchedulerException {
@@ -47,7 +67,7 @@ public class HelloWorlsJobSchedular {
 
         scheduler.scheduleJob(colorJobDetails, colorJobTrigger);
         scheduler.start();
-        log.info("job is scheduled at the time of : {}, and time interval : {} and for the frequency of  : {} ", new Date(),  TIME_INTERVAL,TRIGGER_REPEAT_COUNT);
+        log.info("job is scheduled at the time of : {}, and time interval : {} and for the frequency of  : {} ", new Date(), TIME_INTERVAL, TRIGGER_REPEAT_COUNT);
 
     }
 
